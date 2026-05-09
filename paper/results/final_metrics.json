@@ -1,0 +1,63 @@
+{
+  "split_method": "stratified_group_split (PCAP-level, class-stratified)",
+  "test_size": 0.2,
+  "random_state": 42,
+  "train_flows": 982,
+  "test_flows": 283,
+  "train_pcaps": [
+    "chatgpt_001.pcap",
+    "chatgpt_003.pcap",
+    "chatgpt_004.pcap",
+    "chatgpt_005.pcap",
+    "chatgpt_007.pcap",
+    "chatgpt_008.pcap",
+    "claude_001.pcap",
+    "claude_002.pcap",
+    "claude_003.pcap",
+    "claude_004.pcap",
+    "claude_005.pcap",
+    "copilot_002.pcap",
+    "copilot_003.pcap",
+    "copilot_004.pcap",
+    "copilot_005.pcap",
+    "copilot_006.pcap",
+    "nonai_003.pcap",
+    "nonai_004.pcap",
+    "nonai_005.pcap",
+    "nonai_006.pcap",
+    "nonai_007.pcap",
+    "nonai_008.pcap"
+  ],
+  "test_pcaps": [
+    "chatgpt_002.pcap",
+    "chatgpt_006.pcap",
+    "claude_006.pcap",
+    "copilot_001.pcap",
+    "nonai_002.pcap"
+  ],
+  "leakage_check": "PASSED (0 overlap)",
+  "models": {
+    "RandomForest": {
+      "accuracy": 0.5653710247349824,
+      "macro_f1": 0.5238952435813035,
+      "per_class_f1": {
+        "chatgpt": 0.14583333333333334,
+        "claude": 0.21505376344086022,
+        "copilot": 1.0,
+        "non_ai": 0.7346938775510204
+      },
+      "mean_confidence_pct": 70.46368163550225
+    },
+    "XGBoost": {
+      "accuracy": 0.6855123674911661,
+      "macro_f1": 0.6335078534031413,
+      "per_class_f1": {
+        "chatgpt": 0.0,
+        "claude": 0.5340314136125655,
+        "copilot": 1.0,
+        "non_ai": 1.0
+      },
+      "mean_confidence_pct": 95.10165405273438
+    }
+  }
+}

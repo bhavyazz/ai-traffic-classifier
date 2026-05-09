@@ -1,0 +1,64 @@
+{
+  "accuracy": 0.6855123674911661,
+  "per_class": {
+    "chatgpt": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0
+    },
+    "claude": {
+      "precision": 0.36428571428571427,
+      "recall": 1.0,
+      "f1": 0.5340314136125655
+    },
+    "copilot": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "non_ai": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    }
+  },
+  "classification_report": {
+    "chatgpt": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1-score": 0.0,
+      "support": 89.0
+    },
+    "claude": {
+      "precision": 0.36428571428571427,
+      "recall": 1.0,
+      "f1-score": 0.5340314136125655,
+      "support": 51.0
+    },
+    "copilot": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 17.0
+    },
+    "non_ai": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1-score": 1.0,
+      "support": 126.0
+    },
+    "accuracy": 0.6855123674911661,
+    "macro avg": {
+      "precision": 0.5910714285714286,
+      "recall": 0.75,
+      "f1-score": 0.6335078534031413,
+      "support": 283.0
+    },
+    "weighted avg": {
+      "precision": 0.5709490156486623,
+      "recall": 0.6855123674911661,
+      "f1-score": 0.6015392300149853,
+      "support": 283.0
+    }
+  }
+}

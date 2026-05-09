@@ -1,0 +1,22 @@
+# AI Traffic Classifier — IEEE research stack
+# Python 3.10+ recommended
+
+# Capture & parsing (metadata only; no decryption)
+scapy>=2.5.0
+nfstream>=6.5.0
+
+# Data & ML
+pandas>=2.0.0
+numpy>=1.24.0
+scikit-learn>=1.3.0
+xgboost>=2.0.0
+joblib>=1.3.0
+
+# Deep learning
+torch>=2.0.0
+
+# Dashboard & visualization
+streamlit>=1.28.0
+plotly>=5.18.0
+matplotlib>=3.7.0
+seaborn>=0.13.0
