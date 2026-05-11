@@ -41,7 +41,7 @@ from models.train_rf import predict_with_confidence as rf_predict  # noqa: E402
 from models.train_xgboost import predict_with_confidence as xgb_predict  # noqa: E402
 
 # TODO: default features CSV (output of extractor.py)
-DEFAULT_DATA_CSV = "data/processed/flows_features.csv"
+DEFAULT_DATA_CSV = "data/processed/flows_features_balanced.csv"
 DEFAULT_RESULTS_DIR = "paper/results"
 
 CLASS_NAMES = ["chatgpt", "claude", "copilot", "non_ai"]

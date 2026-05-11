@@ -29,7 +29,7 @@ if str(ROOT) not in sys.path:
 from features.extractor import FEATURE_COLUMNS  # noqa: E402
 
 # TODO: path to your merged features CSV
-DEFAULT_DATA_CSV = "data/processed/flows_features.csv"
+DEFAULT_DATA_CSV = "data/processed/flows_features_balanced.csv"
 DEFAULT_MODEL_PATH = "models/artifacts/xgb_model.joblib"
 
 CLASS_NAMES = ["chatgpt", "claude", "copilot", "non_ai"]

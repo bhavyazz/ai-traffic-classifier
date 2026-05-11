@@ -99,8 +99,9 @@ python evaluate/evaluate.py
 
 Launch the interactive dashboard:
 ```bash
-python dashboard/app.py
+uvicorn dashboard.backend:app --reload
 ```
+Open your browser at `http://localhost:8000`.
 
 ## Dataset
 

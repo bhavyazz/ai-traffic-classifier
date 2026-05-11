@@ -33,7 +33,7 @@ if str(ROOT) not in sys.path:
 from features.extractor import FEATURE_COLUMNS  # noqa: E402
 
 # TODO: path to your merged features CSV
-DEFAULT_DATA_CSV = "data/processed/flows_features.csv"
+DEFAULT_DATA_CSV = "data/processed/flows_features_balanced.csv"
 DEFAULT_BUNDLE_PATH = "models/artifacts/cnn_bundle.joblib"
 DEFAULT_CKPT_PATH = "models/artifacts/cnn_model.pt"
 

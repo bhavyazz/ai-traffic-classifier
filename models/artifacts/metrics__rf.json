@@ -1,0 +1,8 @@
+{
+  "model": "rf",
+  "accuracy": 0.7993273542600897,
+  "classification_report": {
+    "raw": "              precision    recall  f1-score   support\n\n     chatgpt       0.45      0.48      0.46       126\n      claude       0.64      0.60      0.62        72\n     copilot       0.59      0.57      0.58        81\n      non_ai       0.92      0.92      0.92       613\n\n    accuracy                           0.80       892\n   macro avg       0.65      0.64      0.64       892\nweighted avg       0.80      0.80      0.80       892\n"
+  },
+  "timestamp": "2026-05-09T20:45:32.360606"
+}

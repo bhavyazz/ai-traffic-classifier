@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Traffic Classifier</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <nav class="sidebar glass-panel">
+        <div class="logo">
+            <h2>Net<span class="highlight">Lens</span></h2>
+        </div>
+        <ul class="nav-links">
+            <li class="active" data-tab="upload"><i class="icon">📁</i> Upload PCAP</li>
+            <li data-tab="capture"><i class="icon">📡</i> Live Capture</li>
+            <li data-tab="analytics"><i class="icon">📊</i> Analytics</li>
+        </ul>
+    </nav>
+
+    <main class="content">
+        <header>
+            <h1>AI Traffic Classifier</h1>
+            <p class="subtitle">Identify ChatGPT, Claude, and Copilot encrypted traffic patterns using Machine Learning.</p>
+        </header>
+
+        <!-- UPLOAD TAB -->
+        <section id="upload" class="tab-content active">
+            <div class="glass-panel card upload-card">
+                <h3>Upload Network Capture</h3>
+                <p>Select a .pcap file to analyze encrypted flows.</p>
+                
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-content">
+                        <i class="icon large-icon">📥</i>
+                        <p>Drag & Drop your PCAP file here</p>
+                        <span>or</span>
+                        <button class="btn primary-btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
+                        <input type="file" id="fileInput" accept=".pcap" style="display: none;">
+                    </div>
+                </div>
+                
+                <div id="uploadLoader" class="loader-container hidden">
+                    <div class="spinner"></div>
+                    <p>Extracting features & classifying flows...</p>
+                </div>
+            </div>
+
+            <div id="uploadResults" class="results-container hidden">
+                <div class="glass-panel summary-card">
+                    <h3>Analysis Summary</h3>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span class="label">Total Flows</span>
+                            <span class="value" id="upTotalFlows">0</span>
+                        </div>
+                        <div class="metric">
+                            <span class="label">Primary Tool</span>
+                            <span class="value highlight-text" id="upPrimaryTool">Unknown</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel table-card">
+                    <h3>Flow Details</h3>
+                    <div class="table-container">
+                        <table id="upTable">
+                            <thead>
+                                <tr>
+                                    <th>Flow ID</th>
+                                    <th>Packets</th>
+                                    <th>Bytes</th>
+                                    <th>RF Pred</th>
+                                    <th>XGB Pred</th>
+                                    <th>CNN Pred</th>
+                                    <th>Majority</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CAPTURE TAB -->
+        <section id="capture" class="tab-content">
+            <div class="glass-panel card">
+                <h3>Live Traffic Capture</h3>
+                <p>Capture network traffic on the host interface.</p>
+                
+                <div class="capture-controls">
+                    <div class="input-group">
+                        <label for="captureDuration">Duration (seconds):</label>
+                        <input type="range" id="captureDuration" min="10" max="120" value="30" oninput="document.getElementById('durVal').innerText = this.value + 's'">
+                        <span id="durVal">30s</span>
+                    </div>
+                    <button id="startCaptureBtn" class="btn primary-btn pulse">Start Capture</button>
+                </div>
+
+                <div id="captureLoader" class="loader-container hidden">
+                    <div class="radar"></div>
+                    <p id="captureStatusText">Sniffing network traffic...</p>
+                    <div class="progress-bar"><div class="progress" id="captureProgress"></div></div>
+                </div>
+            </div>
+
+            <div id="captureResults" class="results-container hidden">
+                <!-- Same structure as upload results -->
+            </div>
+        </section>
+
+        <!-- ANALYTICS TAB -->
+        <section id="analytics" class="tab-content">
+            <div class="glass-panel card">
+                <h3>Model Performance Metrics</h3>
+                <p>Evaluation results based on the balanced test dataset.</p>
+                
+                <div class="analytics-grid" id="analyticsGrid">
+                    <div class="loader-container"><div class="spinner"></div><p>Loading metrics...</p></div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

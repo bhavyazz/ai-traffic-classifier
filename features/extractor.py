@@ -52,6 +52,9 @@ FEATURE_COLUMNS = (
     "burst_avg_size",
     "bytes_per_second",
     "packets_per_second",
+    "burst_mean_size_variance",
+    "small_to_large_ratio",
+    "inter_burst_gap",
 )
 
 LABELS = ("chatgpt", "claude", "copilot", "non_ai")
@@ -118,26 +121,48 @@ def _identify_client_for_flow(
     return None, None
 
 
-def _burst_stats(timestamps: List[float], burst_gap_s: float = 0.1) -> Tuple[int, float]:
+def _burst_features(timestamps: List[float], sizes: List[int], burst_gap_s: float = 0.1) -> Tuple[int, float, float, float]:
     """
     Segment flow by inter-arrival gaps > burst_gap_s.
-    Returns (burst_count, average packets per burst).
+    Returns (burst_count, burst_avg_size, burst_mean_size_variance, inter_burst_gap).
     """
     if not timestamps:
-        return 0, 0.0
+        return 0, 0.0, 0.0, 0.0
     if len(timestamps) == 1:
-        return 1, 1.0
-    ts = sorted(timestamps)
+        return 1, 1.0, 0.0, 0.0
+        
+    ts_sz = sorted(zip(timestamps, sizes), key=lambda x: x[0])
+    ts = [x[0] for x in ts_sz]
+    sz = [x[1] for x in ts_sz]
+    
     burst_sizes: List[int] = []
-    cur = 1
+    burst_mean_sizes: List[float] = []
+    inter_burst_gaps: List[float] = []
+    
+    cur_count = 1
+    cur_sum = sz[0]
+    
     for i in range(1, len(ts)):
-        if ts[i] - ts[i - 1] > burst_gap_s:
-            burst_sizes.append(cur)
-            cur = 1
+        gap = ts[i] - ts[i - 1]
+        if gap > burst_gap_s:
+            burst_sizes.append(cur_count)
+            burst_mean_sizes.append(cur_sum / cur_count)
+            inter_burst_gaps.append(gap)
+            cur_count = 1
+            cur_sum = sz[i]
         else:
-            cur += 1
-    burst_sizes.append(cur)
-    return len(burst_sizes), float(np.mean(burst_sizes))
+            cur_count += 1
+            cur_sum += sz[i]
+            
+    burst_sizes.append(cur_count)
+    burst_mean_sizes.append(cur_sum / cur_count)
+    
+    burst_count = len(burst_sizes)
+    burst_avg_size = float(np.mean(burst_sizes))
+    burst_mean_size_variance = float(np.var(burst_mean_sizes)) if len(burst_mean_sizes) > 1 else 0.0
+    avg_inter_burst_gap = float(np.mean(inter_burst_gaps)) if inter_burst_gaps else 0.0
+    
+    return burst_count, burst_avg_size, burst_mean_size_variance, avg_inter_burst_gap
 
 
 def flows_from_packets(
@@ -193,7 +218,11 @@ def flows_from_packets(
         denom = c2s_bytes + s2c_bytes
         direction_ratio = float(c2s_bytes / denom) if denom > 0 else 0.5
 
-        burst_count, burst_avg_size = _burst_stats(times, burst_gap_s=burst_gap_s)
+        burst_count, burst_avg_size, burst_mean_size_variance, inter_burst_gap = _burst_features(times, lens, burst_gap_s=burst_gap_s)
+
+        small_packets = sum(1 for l in lens if l < 200)
+        large_packets = sum(1 for l in lens if l > 1000)
+        small_to_large_ratio = float(small_packets / large_packets) if large_packets > 0 else float(small_packets)
 
         row = {
             "flow_key": str(key),
@@ -211,6 +240,9 @@ def flows_from_packets(
             "burst_avg_size": float(burst_avg_size),
             "bytes_per_second": float(total_bytes / flow_duration),
             "packets_per_second": float(total_packets / flow_duration),
+            "burst_mean_size_variance": float(burst_mean_size_variance),
+            "small_to_large_ratio": float(small_to_large_ratio),
+            "inter_burst_gap": float(inter_burst_gap),
         }
         rows.append(row)
 
