@@ -172,10 +172,3 @@ To contribute to this project, please ensure:
 2. Metrics are updated in `paper/results/`
 3. Dashboard visualizations reflect latest model performance
 
-## License
-
-[Add your license information here]
-
-## Contact
-
-[Add contact information here]
