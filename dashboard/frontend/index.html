@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AI Traffic Classifier</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=1.1">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -55,16 +55,19 @@
             </div>
 
             <div id="uploadResults" class="results-container hidden">
+                <div class="result-summary">
+                    <span class="label">Classification Result</span>
+                    <div class="main-prediction" id="upPrimaryTool">Unknown</div>
+                    <span id="upFlowCount" class="flow-count">Analyzing flows...</span>
+                    <span class="status-badge success">✓ Complete</span>
+                </div>
+
                 <div class="glass-panel summary-card">
                     <h3>Analysis Summary</h3>
                     <div class="metrics-grid">
                         <div class="metric">
                             <span class="label">Total Flows</span>
                             <span class="value" id="upTotalFlows">0</span>
-                        </div>
-                        <div class="metric">
-                            <span class="label">Primary Tool</span>
-                            <span class="value highlight-text" id="upPrimaryTool">Unknown</span>
                         </div>
                     </div>
                 </div>
@@ -113,8 +116,79 @@
                 </div>
             </div>
 
+            <!-- Save Panel (shown after capture) -->
+            <div id="captureSavePanel" class="hidden">
+                <div class="glass-panel card capture-complete-card">
+                    <div class="capture-complete-header">
+                        <span class="capture-complete-icon">✅</span>
+                        <h3>Capture Complete</h3>
+                    </div>
+                    <div class="capture-stats">
+                        <div class="capture-stat">
+                            <span class="stat-value" id="capturedPacketCount">0</span>
+                            <span class="stat-label">Packets Captured</span>
+                        </div>
+                        <div class="capture-stat">
+                            <span class="stat-value" id="capturedFlowCount">0</span>
+                            <span class="stat-label">Flows Detected</span>
+                        </div>
+                    </div>
+
+                    <div class="save-input-row" style="margin-top: 1.5rem;">
+                        <input type="text" id="pcapFilename" class="save-filename-input" placeholder="Enter filename (e.g. capture1.pcap)">
+                        <button class="btn primary-btn" onclick="savePcapCustom()">Save & Classify</button>
+                    </div>
+
+                    <div id="saveStatus" class="save-status hidden">
+                        <span id="saveMessage"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Classify loader (shown while "processing") -->
+            <div id="classifyLoader" class="loader-container hidden">
+                <div class="spinner"></div>
+                <p>Running ML models on captured traffic...</p>
+            </div>
+
+            <!-- Results (shown after classification) -->
             <div id="captureResults" class="results-container hidden">
-                <!-- Same structure as upload results -->
+                <div class="result-summary">
+                    <span class="label">Classification Result</span>
+                    <div class="main-prediction" id="capPrimaryTool">Unknown</div>
+                    <span id="capFlowCount" class="flow-count">Analyzing flows...</span>
+                    <span class="status-badge success">✓ Complete</span>
+                </div>
+
+                <div class="glass-panel summary-card">
+                    <h3>Analysis Summary</h3>
+                    <div class="metrics-grid">
+                        <div class="metric">
+                            <span class="label">Total Flows</span>
+                            <span class="value" id="capTotalFlows">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="glass-panel table-card">
+                    <h3>Flow Details</h3>
+                    <div class="table-container">
+                        <table id="capTable">
+                            <thead>
+                                <tr>
+                                    <th>Flow ID</th>
+                                    <th>Packets</th>
+                                    <th>Bytes</th>
+                                    <th>RF Pred</th>
+                                    <th>XGB Pred</th>
+                                    <th>CNN Pred</th>
+                                    <th>Majority</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </section>
 
@@ -131,6 +205,6 @@
         </section>
     </main>
 
-    <script src="/static/script.js"></script>
+    <script src="/static/script.js?v=1.1"></script>
 </body>
 </html>

@@ -1,9 +1,36 @@
-# Byte-compiled / optimized / DLL files
+# ============================================
+# AI Traffic Classifier - .gitignore
+# ============================================
+
+# ---------- Data files ----------
+# Raw packet captures (very large)
+data/raw/*.pcap
+data/test/*.pcap
+*.pcap
+
+# Processed / extracted feature CSVs
+data/processed/*.csv
+
+# ---------- Model artifacts ----------
+models/artifacts/*.joblib
+models/artifacts/*.pt
+models/artifacts/*.pth
+models/artifacts/*.h5
+models/artifacts/*.pkl
+models/artifacts/*.onnx
+# Keep metrics JSON for reproducibility reference
+# models/artifacts/*.json
+
+# ---------- Evaluation results (regenerable) ----------
+paper/results/*.png
+paper/results/*.csv
+paper/results/*.md
+paper/results/*.json
+
+# ---------- Python ----------
 __pycache__/
 *.py[cod]
 *$py.class
-
-# C extensions
 *.so
 
 # Distribution / packaging
@@ -53,17 +80,15 @@ coverage.xml
 *.mo
 *.pot
 
-# Django stuff:
+# Django / Flask
 *.log
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
-
-# Flask stuff:
 instance/
 .webassets-cache
 
-# Scrapy stuff:
+# Scrapy
 .scrapy
 
 # Sphinx documentation
@@ -88,11 +113,11 @@ Pipfile.lock
 # PEP 582
 __pypackages__/
 
-# Celery stuff
+# Celery
 celerybeat-schedule
 celerybeat.pid
 
-# SageMath parsed files
+# SageMath
 *.sage.py
 
 # Environments
@@ -104,40 +129,17 @@ ENV/
 env.bak/
 venv.bak/
 
-# Spyder project settings
-.spyderproject
-.spyproject
-
-# Rope project settings
-.ropeproject
-
-# mkdocs documentation
-/site
-
-# mypy
-.mypy_cache/
-.dmypy.json
-dmypy.json
-
-# Pyre type checker
-.pyre/
-
-# IDE
+# ---------- IDE ----------
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
 
-# OS
+# ---------- OS ----------
 .DS_Store
 Thumbs.db
+desktop.ini
 
-# Raw data and large files
-data/raw/
-*.pcap
-
-# Model artifacts (optional - uncomment if you want to ignore these)
-# models/artifacts/
-# *.joblib
-# *.pt
+# ---------- Keep .gitkeep files ----------
+!.gitkeep
