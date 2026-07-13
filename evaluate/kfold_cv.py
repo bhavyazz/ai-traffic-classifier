@@ -26,7 +26,7 @@ import numpy as np
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import accuracy_score, f1_score
+from sklearn.metrics import accuracy_score, cohen_kappa_score, f1_score, matthews_corrcoef
 from sklearn.model_selection import StratifiedKFold
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import LabelEncoder, StandardScaler
@@ -196,6 +196,8 @@ def run_kfold(
             raise ValueError(f"Unknown model: {model_name}")
 
         acc = accuracy_score(y_test, y_pred)
+        kappa = cohen_kappa_score(y_test, y_pred)
+        mcc = matthews_corrcoef(y_test, y_pred)
         macro_f1 = f1_score(y_test, y_pred, average="macro", zero_division=0)
         per_class_f1 = f1_score(
             y_test, y_pred,
@@ -208,13 +210,15 @@ def run_kfold(
             "model": model_name,
             "fold": fold_idx,
             "accuracy": acc,
+            "cohen_kappa": kappa,
+            "mcc": mcc,
             "macro_f1": macro_f1,
         }
         for i, cls in enumerate(le.classes_):
             record[f"f1_{cls}"] = per_class_f1[i]
 
         fold_records.append(record)
-        print(f"  Fold {fold_idx}: Accuracy={acc:.4f}  Macro F1={macro_f1:.4f}")
+        print(f"  Fold {fold_idx}: Accuracy={acc:.4f}  Kappa={kappa:.4f}  MCC={mcc:.4f}  Macro F1={macro_f1:.4f}")
 
     return fold_records
 
@@ -225,15 +229,19 @@ def run_kfold(
 
 def print_model_summary(model_name: str, records: List[Dict], le: LabelEncoder) -> str:
     """Pretty-print and return a markdown summary block."""
-    accs = [r["accuracy"] for r in records]
-    f1s  = [r["macro_f1"] for r in records]
+    accs   = [r["accuracy"] for r in records]
+    kappas = [r["cohen_kappa"] for r in records]
+    mccs   = [r["mcc"] for r in records]
+    f1s    = [r["macro_f1"] for r in records]
 
     lines: List[str] = []
     lines.append(f"\nModel: {model_name}")
     for r in records:
-        lines.append(f"  Fold {r['fold']}: Accuracy={r['accuracy']:.4f}  Macro F1={r['macro_f1']:.4f}")
-    lines.append(f"  Mean Accuracy: {np.mean(accs):.4f} ± {np.std(accs):.4f}")
-    lines.append(f"  Mean Macro F1: {np.mean(f1s):.4f} ± {np.std(f1s):.4f}")
+        lines.append(f"  Fold {r['fold']}: Accuracy={r['accuracy']:.4f}  Kappa={r['cohen_kappa']:.4f}  MCC={r['mcc']:.4f}  Macro F1={r['macro_f1']:.4f}")
+    lines.append(f"  Mean Accuracy:     {np.mean(accs):.4f} ± {np.std(accs):.4f}")
+    lines.append(f"  Mean Cohen Kappa:  {np.mean(kappas):.4f} ± {np.std(kappas):.4f}")
+    lines.append(f"  Mean MCC:          {np.mean(mccs):.4f} ± {np.std(mccs):.4f}")
+    lines.append(f"  Mean Macro F1:     {np.mean(f1s):.4f} ± {np.std(f1s):.4f}")
     lines.append("")
     lines.append("  Per Class F1:")
     for cls in le.classes_:
@@ -266,18 +274,22 @@ def save_summary_md(all_records: List[Dict], le: LabelEncoder, out_path: Path) -
         "",
         "## Summary Table",
         "",
-        "| Model | Mean Accuracy | Std Accuracy | Mean Macro F1 | Std Macro F1 |",
-        "|-------|--------------|-------------|--------------|-------------|",
+        "| Model | Mean Accuracy | Std Accuracy | Mean Kappa | Std Kappa | Mean MCC | Std MCC | Mean Macro F1 | Std Macro F1 |",
+        "|-------|--------------|-------------|------------|-----------|----------|---------|--------------|-------------|",
     ]
 
     for m in models:
         recs = [r for r in all_records if r["model"] == m]
         if not recs:
             continue
-        accs = [r["accuracy"] for r in recs]
-        f1s  = [r["macro_f1"]  for r in recs]
+        accs   = [r["accuracy"] for r in recs]
+        kappas = [r["cohen_kappa"] for r in recs]
+        mccs   = [r["mcc"] for r in recs]
+        f1s    = [r["macro_f1"]  for r in recs]
         lines.append(
             f"| {m} | {np.mean(accs):.4f} | {np.std(accs):.4f} "
+            f"| {np.mean(kappas):.4f} | {np.std(kappas):.4f} "
+            f"| {np.mean(mccs):.4f} | {np.std(mccs):.4f} "
             f"| {np.mean(f1s):.4f} | {np.std(f1s):.4f} |"
         )
 
@@ -296,12 +308,13 @@ def save_summary_md(all_records: List[Dict], le: LabelEncoder, out_path: Path) -
         lines.append("")
 
     lines += ["", "## Per-Fold Detail", ""]
-    lines.append("| Model | Fold | Accuracy | Macro F1 | " +
+    lines.append("| Model | Fold | Accuracy | Kappa | MCC | Macro F1 | " +
                  " | ".join(f"F1 {c}" for c in le.classes_) + " |")
-    lines.append("|-------|------|----------|----------|" +
+    lines.append("|-------|------|----------|-------|-----|----------|" +
                  "|".join(["-------"] * len(le.classes_)) + "|")
     for r in all_records:
         row = (f"| {r['model']} | {r['fold']} | {r['accuracy']:.4f} "
+               f"| {r['cohen_kappa']:.4f} | {r['mcc']:.4f} "
                f"| {r['macro_f1']:.4f} |")
         for cls in le.classes_:
             row += f" {r[f'f1_{cls}']:.4f} |"

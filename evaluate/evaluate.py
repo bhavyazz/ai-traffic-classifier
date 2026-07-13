@@ -25,7 +25,9 @@ from sklearn.calibration import calibration_curve
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
+    cohen_kappa_score,
     confusion_matrix,
+    matthews_corrcoef,
     precision_recall_fscore_support,
 )
 from sklearn.model_selection import train_test_split
@@ -196,6 +198,8 @@ if __name__ == "__main__":
         y_pred_str, conf = predict_fn(bundle, X_test)
         y_pred = le.transform(y_pred_str)
         acc = accuracy_score(y_test, y_pred)
+        kappa = cohen_kappa_score(y_test, y_pred)
+        mcc = matthews_corrcoef(y_test, y_pred)
         prec, rec, f1, _ = precision_recall_fscore_support(
             y_test, y_pred, average=None, labels=list(range(len(CLASS_NAMES))), zero_division=0
         )
@@ -210,6 +214,8 @@ if __name__ == "__main__":
             {
                 "model": display_name,
                 "accuracy": acc,
+                "cohen_kappa": kappa,
+                "mcc": mcc,
                 "macro_f1": report["macro avg"]["f1-score"],
                 "mean_confidence_pct": float(np.mean(conf)),
             }
@@ -229,6 +235,8 @@ if __name__ == "__main__":
         metrics_path = os.path.join(args.results_dir, f"metrics__{short}.json")
         out_metrics = {
             "accuracy": float(acc),
+            "cohen_kappa": float(kappa),
+            "mcc": float(mcc),
             "per_class": {
                 CLASS_NAMES[i]: {"precision": float(prec[i]), "recall": float(rec[i]), "f1": float(f1[i])}
                 for i in range(len(CLASS_NAMES))
@@ -238,7 +246,8 @@ if __name__ == "__main__":
         with open(metrics_path, "w", encoding="utf-8") as f:
             json.dump(out_metrics, f, indent=2)
 
-        print(f"\n=== {display_name} ===\naccuracy={acc:.4f}\n", flush=True)
+        print(f"\n=== {display_name} ===", flush=True)
+        print(f"accuracy={acc:.4f}  cohen_kappa={kappa:.4f}  mcc={mcc:.4f}\n", flush=True)
         print(classification_report(y_test, y_pred, target_names=list(le.classes_)), flush=True)
 
     cmp_df = pd.DataFrame(rows_summary)

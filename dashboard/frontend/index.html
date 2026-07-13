@@ -3,12 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Traffic Classifier</title>
-    <link rel="stylesheet" href="/static/style.css?v=1.1">
+    <meta name="description" content="AI Traffic Classifier — Identify ChatGPT, Claude, and Copilot encrypted network traffic patterns using machine learning.">
+    <title>NetLens — AI Traffic Classifier</title>
+    <link rel="stylesheet" href="/static/style.css?v=11.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <div class="background-orbs">
         <div class="orb orb-1"></div>
         <div class="orb orb-2"></div>
@@ -18,72 +24,127 @@
     <nav class="sidebar glass-panel">
         <div class="logo">
             <h2>Net<span class="highlight">Lens</span></h2>
+            <p class="logo-sub">AI Traffic Intelligence</p>
         </div>
         <ul class="nav-links">
-            <li class="active" data-tab="upload"><i class="icon">📁</i> Upload PCAP</li>
-            <li data-tab="capture"><i class="icon">📡</i> Live Capture</li>
-            <li data-tab="analytics"><i class="icon">📊</i> Analytics</li>
+            <li class="active" data-tab="upload">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload PCAP
+                <kbd class="kbd">U</kbd>
+            </li>
+            <li data-tab="capture">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><path d="M16.24 7.76a6 6 0 0 1 0 8.49m-8.48-.01a6 6 0 0 1 0-8.49m11.31-2.82a10 10 0 0 1 0 14.14m-14.14 0a10 10 0 0 1 0-14.14"/></svg>
+                Live Capture
+                <kbd class="kbd">C</kbd>
+            </li>
+            <li data-tab="analytics">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                Analytics
+                <kbd class="kbd">A</kbd>
+            </li>
         </ul>
+
+        <div class="sidebar-footer">
+            <div class="model-status-mini" id="sidebarStatus">
+                <span class="status-dot"></span>
+                <span class="status-text">Loading models...</span>
+            </div>
+            <p class="kbd-hint">Press U / C / A to switch tabs</p>
+        </div>
     </nav>
 
     <main class="content">
         <header>
+            <div class="header-eyebrow">Machine Learning · Network Analysis</div>
             <h1>AI Traffic Classifier</h1>
-            <p class="subtitle">Identify ChatGPT, Claude, and Copilot encrypted traffic patterns using Machine Learning.</p>
+            <p class="subtitle">Identify ChatGPT, Claude, and Copilot encrypted traffic using ensemble ML models — no decryption required.</p>
         </header>
 
-        <!-- UPLOAD TAB -->
+        <!-- ======================================================= -->
+        <!-- UPLOAD TAB                                               -->
+        <!-- ======================================================= -->
         <section id="upload" class="tab-content active">
             <div class="glass-panel card upload-card">
-                <h3>Upload Network Capture</h3>
-                <p>Select a .pcap file to analyze encrypted flows.</p>
-                
+                <div class="card-header">
+                    <div>
+                        <h3>Analyze Network Capture</h3>
+                        <p>Upload a <code>.pcap</code> file to classify encrypted flows using Random Forest, XGBoost, and CNN.</p>
+                    </div>
+                </div>
+
                 <div class="drop-zone" id="dropZone">
                     <div class="drop-content">
-                        <i class="icon large-icon">📥</i>
-                        <p>Drag & Drop your PCAP file here</p>
-                        <span>or</span>
+                        <div class="drop-icon">
+                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        </div>
+                        <p class="drop-title">Drop your PCAP file here</p>
+                        <p class="drop-sub">or</p>
                         <button class="btn primary-btn" onclick="document.getElementById('fileInput').click()">Browse Files</button>
                         <input type="file" id="fileInput" accept=".pcap" style="display: none;">
                     </div>
                 </div>
-                
+
                 <div id="uploadLoader" class="loader-container hidden">
                     <div class="spinner"></div>
-                    <p>Extracting features & classifying flows...</p>
+                    <p class="loader-text">Extracting features &amp; classifying flows...</p>
                 </div>
             </div>
 
             <div id="uploadResults" class="results-container hidden">
+                <!-- Big prediction -->
                 <div class="result-summary">
                     <span class="label">Classification Result</span>
-                    <div class="main-prediction" id="upPrimaryTool">Unknown</div>
-                    <span id="upFlowCount" class="flow-count">Analyzing flows...</span>
-                    <span class="status-badge success">✓ Complete</span>
+                    <div class="main-prediction" id="upPrimaryTool">—</div>
+                    <div class="result-meta">
+                        <span id="upFlowCount" class="flow-count">—</span>
+                        <span class="status-badge success">✓ Complete</span>
+                    </div>
                 </div>
 
-                <div class="glass-panel summary-card">
-                    <h3>Analysis Summary</h3>
+                <!-- Two-col: Donut chart + Confidence bars -->
+                <div class="results-viz-row">
+                    <div class="glass-panel card viz-card">
+                        <h3>Traffic Distribution</h3>
+                        <div class="donut-wrap">
+                            <canvas id="upDonutChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-panel card viz-card">
+                        <h3>Model Confidence</h3>
+                        <div id="upConfBars" class="conf-bars"></div>
+                    </div>
+                </div>
+
+                <!-- Summary -->
+                <div class="glass-panel card summary-card">
+                    <div class="summary-header">
+                        <h3>Analysis Summary</h3>
+                        <button class="btn export-btn" id="upExportBtn" data-flows="[]" data-prediction="">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Export CSV
+                        </button>
+                    </div>
                     <div class="metrics-grid">
                         <div class="metric">
                             <span class="label">Total Flows</span>
-                            <span class="value" id="upTotalFlows">0</span>
+                            <span class="value highlight-text" id="upTotalFlows">0</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="glass-panel table-card">
+                <!-- Flow Table -->
+                <div class="glass-panel card table-card">
                     <h3>Flow Details</h3>
                     <div class="table-container">
                         <table id="upTable">
                             <thead>
                                 <tr>
-                                    <th>Flow ID</th>
+                                    <th>#</th>
                                     <th>Packets</th>
                                     <th>Bytes</th>
-                                    <th>RF Pred</th>
-                                    <th>XGB Pred</th>
-                                    <th>CNN Pred</th>
+                                    <th>RF</th>
+                                    <th>XGB</th>
+                                    <th>CNN</th>
                                     <th>Majority</th>
                                 </tr>
                             </thead>
@@ -94,94 +155,122 @@
             </div>
         </section>
 
-        <!-- CAPTURE TAB -->
+        <!-- ======================================================= -->
+        <!-- CAPTURE TAB                                              -->
+        <!-- ======================================================= -->
         <section id="capture" class="tab-content">
             <div class="glass-panel card">
-                <h3>Live Traffic Capture</h3>
-                <p>Capture network traffic on the host interface.</p>
-                
+                <div class="card-header">
+                    <div>
+                        <h3>Live Traffic Capture</h3>
+                        <p>Capture real-time network traffic on the host interface and classify flows instantly.</p>
+                    </div>
+                </div>
+
                 <div class="capture-controls">
                     <div class="input-group">
-                        <label for="captureDuration">Duration (seconds):</label>
+                        <label for="captureDuration" class="range-label">Duration</label>
                         <input type="range" id="captureDuration" min="10" max="120" value="30" oninput="document.getElementById('durVal').innerText = this.value + 's'">
-                        <span id="durVal">30s</span>
+                        <span id="durVal" class="range-value">30s</span>
                     </div>
                     <button id="startCaptureBtn" class="btn primary-btn pulse">Start Capture</button>
                 </div>
 
                 <div id="captureLoader" class="loader-container hidden">
-                    <div class="radar"></div>
-                    <p id="captureStatusText">Sniffing network traffic...</p>
+                    <div class="radar">
+                        <div class="radar-ring r1"></div>
+                        <div class="radar-ring r2"></div>
+                        <div class="radar-dot"></div>
+                    </div>
+                    <p id="captureStatusText" class="loader-text">Sniffing network traffic...</p>
                     <div class="progress-bar"><div class="progress" id="captureProgress"></div></div>
                 </div>
             </div>
 
-            <!-- Save Panel (shown after capture) -->
             <div id="captureSavePanel" class="hidden">
                 <div class="glass-panel card capture-complete-card">
                     <div class="capture-complete-header">
-                        <span class="capture-complete-icon">✅</span>
+                        <div class="complete-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                        </div>
                         <h3>Capture Complete</h3>
                     </div>
-                    <div class="capture-stats">
+                    <div class="capture-stats" style="display: none;">
                         <div class="capture-stat">
                             <span class="stat-value" id="capturedPacketCount">0</span>
-                            <span class="stat-label">Packets Captured</span>
+                            <span class="stat-label">Packets</span>
                         </div>
                         <div class="capture-stat">
                             <span class="stat-value" id="capturedFlowCount">0</span>
-                            <span class="stat-label">Flows Detected</span>
+                            <span class="stat-label">Flows</span>
                         </div>
                     </div>
-
-                    <div class="save-input-row" style="margin-top: 1.5rem;">
-                        <input type="text" id="pcapFilename" class="save-filename-input" placeholder="Enter filename (e.g. capture1.pcap)">
-                        <button class="btn primary-btn" onclick="savePcapCustom()">Save & Classify</button>
+                    <div class="save-input-row" style="margin-top: 1.8rem;">
+                        <input type="text" id="pcapFilename" class="save-filename-input" placeholder="e.g. chatgpt_session.pcap">
+                        <button class="btn primary-btn" onclick="savePcapCustom()">Save &amp; Classify</button>
                     </div>
-
                     <div id="saveStatus" class="save-status hidden">
                         <span id="saveMessage"></span>
                     </div>
                 </div>
             </div>
 
-            <!-- Classify loader (shown while "processing") -->
             <div id="classifyLoader" class="loader-container hidden">
                 <div class="spinner"></div>
-                <p>Running ML models on captured traffic...</p>
+                <p class="loader-text">Running ML models on captured traffic...</p>
             </div>
 
-            <!-- Results (shown after classification) -->
             <div id="captureResults" class="results-container hidden">
                 <div class="result-summary">
                     <span class="label">Classification Result</span>
-                    <div class="main-prediction" id="capPrimaryTool">Unknown</div>
-                    <span id="capFlowCount" class="flow-count">Analyzing flows...</span>
-                    <span class="status-badge success">✓ Complete</span>
+                    <div class="main-prediction" id="capPrimaryTool">—</div>
+                    <div class="result-meta">
+                        <span id="capFlowCount" class="flow-count">—</span>
+                        <span class="status-badge success">✓ Complete</span>
+                    </div>
                 </div>
 
-                <div class="glass-panel summary-card">
-                    <h3>Analysis Summary</h3>
+                <div class="results-viz-row">
+                    <div class="glass-panel card viz-card">
+                        <h3>Traffic Distribution</h3>
+                        <div class="donut-wrap">
+                            <canvas id="capDonutChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="glass-panel card viz-card">
+                        <h3>Model Confidence</h3>
+                        <div id="capConfBars" class="conf-bars"></div>
+                    </div>
+                </div>
+
+                <div class="glass-panel card summary-card">
+                    <div class="summary-header">
+                        <h3>Analysis Summary</h3>
+                        <button class="btn export-btn" id="capExportBtn" data-flows="[]" data-prediction="">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                            Export CSV
+                        </button>
+                    </div>
                     <div class="metrics-grid">
                         <div class="metric">
                             <span class="label">Total Flows</span>
-                            <span class="value" id="capTotalFlows">0</span>
+                            <span class="value highlight-text" id="capTotalFlows">0</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="glass-panel table-card">
+                <div class="glass-panel card table-card">
                     <h3>Flow Details</h3>
                     <div class="table-container">
                         <table id="capTable">
                             <thead>
                                 <tr>
-                                    <th>Flow ID</th>
+                                    <th>#</th>
                                     <th>Packets</th>
                                     <th>Bytes</th>
-                                    <th>RF Pred</th>
-                                    <th>XGB Pred</th>
-                                    <th>CNN Pred</th>
+                                    <th>RF</th>
+                                    <th>XGB</th>
+                                    <th>CNN</th>
                                     <th>Majority</th>
                                 </tr>
                             </thead>
@@ -192,19 +281,322 @@
             </div>
         </section>
 
-        <!-- ANALYTICS TAB -->
+        <!-- ======================================================= -->
+        <!-- ANALYTICS TAB                                            -->
+        <!-- ======================================================= -->
+        <!-- ======================================================= -->
+        <!-- ANALYTICS TAB                                            -->
+        <!-- ======================================================= -->
         <section id="analytics" class="tab-content">
-            <div class="glass-panel card">
-                <h3>Model Performance Metrics</h3>
-                <p>Evaluation results based on the balanced test dataset.</p>
-                
-                <div class="analytics-grid" id="analyticsGrid">
-                    <div class="loader-container"><div class="spinner"></div><p>Loading metrics...</p></div>
+            <!-- Analytics Summary Interactive Cards Grid -->
+            <div class="analytics-metrics-cards-grid">
+                <!-- Card 1: Dataset Summary -->
+                <div class="glass-panel card interactive-summary-card flipped-container" onclick="this.classList.toggle('flipped')">
+                    <div class="card-inner">
+                        <div class="card-front">
+                            <div class="card-header-icon">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                                <span class="card-badge">Dataset</span>
+                            </div>
+                            <h3>Dataset Summary</h3>
+                            <div class="metric-row">
+                                <span class="metric-label">Capture Sessions</span>
+                                <span class="metric-val">51</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Raw Flows</span>
+                                <span class="metric-val">7,138</span>
+                            </div>
+                            <div class="metric-row">
+                                <span class="metric-label">Balanced Flows</span>
+                                <span class="metric-val">5,529</span>
+                            </div>
+                            <div class="card-interactive-hint">Click card to view class breakdown ↺</div>
+                        </div>
+                        <div class="card-back">
+                            <div class="card-header-icon">
+                                <span class="card-badge success">Class Balance</span>
+                            </div>
+                            <h3>Class Breakdown</h3>
+                            <div class="breakdown-list">
+                                <div class="breakdown-item">
+                                    <span class="dot gpt"></span>
+                                    <span class="lbl">ChatGPT:</span>
+                                    <span class="val">1,500 flows</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="dot claude"></span>
+                                    <span class="lbl">Claude:</span>
+                                    <span class="val">1,500 flows</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="dot copilot"></span>
+                                    <span class="lbl">Copilot:</span>
+                                    <span class="val">1,029 flows</span>
+                                </div>
+                                <div class="breakdown-item">
+                                    <span class="dot nonai"></span>
+                                    <span class="lbl">Non-AI:</span>
+                                    <span class="val">1,500 flows</span>
+                                </div>
+                            </div>
+                            <div class="card-interactive-hint">Click card to flip back ↺</div>
+                        </div>
+                    </div>
                 </div>
+
+                <!-- Card 2: 17 Flow-Level Features -->
+                <div class="glass-panel card interactive-summary-card">
+                    <div class="card-header-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+                        <span class="card-badge secondary">17 Features</span>
+                    </div>
+                    <h3>Flow-Level Features</h3>
+                    <p class="card-desc">Grouped by traffic characteristics. Click to toggle list:</p>
+                    <div class="features-accordion">
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(event, 'acc-volumetric')">
+                                <span>Volumetric (5)</span>
+                                <span class="arrow">▼</span>
+                            </div>
+                            <div id="acc-volumetric" class="accordion-content">
+                                <ul>
+                                    <li><code>total_packets</code></li>
+                                    <li><code>total_bytes</code></li>
+                                    <li><code>bytes_per_second</code></li>
+                                    <li><code>packets_per_second</code></li>
+                                    <li><code>direction_ratio</code></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(event, 'acc-pktsize')">
+                                <span>Packet Size (5)</span>
+                                <span class="arrow">▶</span>
+                            </div>
+                            <div id="acc-pktsize" class="accordion-content hidden">
+                                <ul>
+                                    <li><code>mean_packet_size</code></li>
+                                    <li><code>std_packet_size</code></li>
+                                    <li><code>min_packet_size</code></li>
+                                    <li><code>max_packet_size</code></li>
+                                    <li><code>small_to_large_ratio</code></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(event, 'acc-timing')">
+                                <span>Timing (4)</span>
+                                <span class="arrow">▶</span>
+                            </div>
+                            <div id="acc-timing" class="accordion-content hidden">
+                                <ul>
+                                    <li><code>flow_duration</code></li>
+                                    <li><code>mean_interarrival_time</code></li>
+                                    <li><code>std_interarrival_time</code></li>
+                                    <li><code>inter_burst_gap</code></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <div class="accordion-header" onclick="toggleAccordion(event, 'acc-behavioural')">
+                                <span>Behavioural (3)</span>
+                                <span class="arrow">▶</span>
+                            </div>
+                            <div id="acc-behavioural" class="accordion-content hidden">
+                                <ul>
+                                    <li><code>burst_count</code></li>
+                                    <li><code>burst_avg_size</code></li>
+                                    <li><code>burst_mean_size_variance</code></li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: Model Comparison -->
+                <div class="glass-panel card interactive-summary-card">
+                    <div class="card-header-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        <span class="card-badge warning">Accuracy</span>
+                    </div>
+                    <h3>Model Comparison</h3>
+                    <div class="comparison-bars">
+                        <div class="comparison-bar-row best-model">
+                            <div class="comparison-bar-info">
+                                <span class="name">XGBoost</span>
+                                <span class="highlight-badge">Best</span>
+                                <span class="val">68%</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 68%; background: var(--accent-secondary);"></div>
+                            </div>
+                        </div>
+                        <div class="comparison-bar-row">
+                            <div class="comparison-bar-info">
+                                <span class="name">Random Forest</span>
+                                <span class="val">67%</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 67%; background: var(--accent-primary);"></div>
+                            </div>
+                        </div>
+                        <div class="comparison-bar-row">
+                            <div class="comparison-bar-info">
+                                <span class="name">CNN-LSTM</span>
+                                <span class="val">43%</span>
+                            </div>
+                            <div class="bar-track">
+                                <div class="bar-fill" style="width: 43%; background: #98989d;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="comparison-desc">Tree-based ensembles significantly outperform deep sequence models due to static statistical feature formulation.</p>
+                </div>
+            </div>
+
+            <!-- 5-Fold Stratified Cross-Validation Section -->
+            <div class="glass-panel card cross-validation-card">
+                <div class="card-header">
+                    <div>
+                        <h3>5-Fold Stratified Cross-Validation</h3>
+                        <p>Evaluates model robustness by training and testing on five different data splits, demonstrating that XGBoost consistently achieved the highest and most stable performance.</p>
+                    </div>
+                </div>
+                <div class="cv-metrics-grid">
+                    <div class="cv-metric-box best-model-cv">
+                        <div class="cv-model-header">
+                            <span class="cv-model-name">XGBoost (Best Model)</span>
+                            <span class="cv-best-badge">Best</span>
+                        </div>
+                        <div class="cv-metric-row-data">
+                            <span>Mean Accuracy</span>
+                            <strong>69.50% ± 1.13%</strong>
+                        </div>
+                        <div class="cv-metric-row-data">
+                            <span>Macro F1 Score</span>
+                            <strong>0.6964 ± 0.0118</strong>
+                        </div>
+                    </div>
+                    <div class="cv-metric-box">
+                        <div class="cv-model-header">
+                            <span class="cv-model-name">Random Forest</span>
+                        </div>
+                        <div class="cv-metric-row-data">
+                            <span>Mean Accuracy</span>
+                            <strong>67.07% ± 2.23%</strong>
+                        </div>
+                        <div class="cv-metric-row-data">
+                            <span>Macro F1 Score</span>
+                            <strong>0.6734 ± 0.0226</strong>
+                        </div>
+                    </div>
+                    <div class="cv-metric-box">
+                        <div class="cv-model-header">
+                            <span class="cv-model-name">CNN–LSTM</span>
+                        </div>
+                        <div class="cv-metric-row-data">
+                            <span>Mean Accuracy</span>
+                            <strong>39.66% ± 1.90%</strong>
+                        </div>
+                        <div class="cv-metric-row-data">
+                            <span>Macro F1 Score</span>
+                            <strong>0.3780 ± 0.0120</strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Existing Live Evaluation Results Grid (Renamed to Holdout Test Performance) -->
+            <div class="glass-panel card">
+                <div class="card-header">
+                    <div>
+                        <h3>Model Performance (Holdout Test Set)</h3>
+                        <p>Evaluation results on the balanced test dataset across all three models.</p>
+                    </div>
+                </div>
+                <div class="analytics-grid" id="analyticsGrid">
+                    <div class="loader-container">
+                        <div class="spinner"></div>
+                        <p class="loader-text">Loading metrics...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Experimental Results Visualizations section -->
+            <div class="glass-panel card experimental-results-card">
+                <div class="card-header">
+                    <div>
+                        <h3>Experimental Results &amp; Analytics</h3>
+                        <p>Scientific visualizations and validation analysis compiled from the research paper.</p>
+                    </div>
+                </div>
+
+                <div class="viz-grid">
+                    <!-- Feature Importance & Correlation Heatmap -->
+                    <div class="viz-box">
+                        <h4>Feature Importance &amp; Correlations (Pearson Heatmap)</h4>
+                        <div class="img-container correlation-heatmap-container" onclick="openLightbox('/results/fig7_correlation_heatmap.png', 'Pearson Correlation Heatmap of Network-Flow Features')">
+                            <img src="/results/fig7_correlation_heatmap.png" alt="Pearson Correlation Heatmap of Network-Flow Features" class="paper-viz-img">
+                            <div class="img-overlay">🔍 Click to Expand</div>
+                        </div>
+                        <p class="viz-insight"><strong>Key Observation:</strong> Direction Ratio, Bytes/sec and Standard Deviation of Interarrival Time are the top three discriminative features.</p>
+                    </div>
+
+                    <!-- Cross-Validation Results Boxplot -->
+                    <div class="viz-box">
+                        <h4>K-Fold Cross-Validation Accuracy Range</h4>
+                        <div class="img-container" onclick="openLightbox('/results/kfold_boxplot.png', 'K-Fold Cross-Validation Accuracy Range Boxplot')">
+                            <img src="/results/kfold_boxplot.png" alt="K-Fold Cross-Validation Accuracy Range Boxplot" class="paper-viz-img">
+                            <div class="img-overlay">🔍 Click to Expand</div>
+                        </div>
+                        <p class="viz-insight"><strong>Key Observation:</strong> 5-Fold cross-validation confirms that XGBoost maintains the highest stability with a tight accuracy distribution around 69.5%.</p>
+                    </div>
+
+                    <!-- Impact of Dataset Balancing Chart (Chart.js) -->
+                    <div class="viz-box full-width">
+                        <h4>Impact of Dataset Balancing (Class Distribution)</h4>
+                        <div class="chart-container">
+                            <canvas id="balancingChart"></canvas>
+                        </div>
+                        <p class="viz-insight"><strong>Key Observation:</strong> Dataset balancing reduced overall accuracy from 87.68% to 68.0% but improved AI-class F1 scores by approximately 6–17 percentage points, making the classifier significantly fairer and more reliable.</p>
+                    </div>
+
+                    <!-- Confusion Matrices Tabbed Container -->
+                    <div class="viz-box full-width">
+                        <h4>Confusion Matrices (Model Comparison)</h4>
+                        <div class="tabs-container">
+                            <div class="tab-buttons">
+                                <button class="tab-btn active" onclick="switchCMatTab(event, 'cmat-xgb')">XGBoost (Best)</button>
+                                <button class="tab-btn" onclick="switchCMatTab(event, 'cmat-rf')">Random Forest</button>
+                                <button class="tab-btn" onclick="switchCMatTab(event, 'cmat-cnn')">CNN-LSTM</button>
+                            </div>
+                            <div class="tab-panes">
+                                <div id="cmat-xgb" class="tab-pane active" onclick="openLightbox('/results/confusion_matrix__xgb.png', 'XGBoost Confusion Matrix')">
+                                    <img src="/results/confusion_matrix__xgb.png" alt="XGBoost Confusion Matrix" class="paper-viz-img fit-cm">
+                                </div>
+                                <div id="cmat-rf" class="tab-pane" onclick="openLightbox('/results/confusion_matrix__rf.png', 'Random Forest Confusion Matrix')">
+                                    <img src="/results/confusion_matrix__rf.png" alt="Random Forest Confusion Matrix" class="paper-viz-img fit-cm">
+                                </div>
+                                <div id="cmat-cnn" class="tab-pane" onclick="openLightbox('/results/confusion_matrix__cnn.png', 'CNN-LSTM Confusion Matrix')">
+                                    <img src="/results/confusion_matrix__cnn.png" alt="CNN-LSTM Confusion Matrix" class="paper-viz-img fit-cm">
+                                </div>
+                            </div>
+                        </div>
+                        <p class="viz-insight"><strong>Key Observation:</strong> ChatGPT and Claude exhibit the highest confusion due to similar Cloudflare-backed streaming behaviour.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lightbox Modal for Zooming Images -->
+            <div id="lightboxModal" class="lightbox-modal" onclick="closeLightbox()">
+                <span class="close-lightbox" onclick="closeLightbox()">&times;</span>
+                <img class="lightbox-content" id="lightboxImg">
+                <div id="lightboxCaption" class="lightbox-caption"></div>
             </div>
         </section>
     </main>
 
-    <script src="/static/script.js?v=1.1"></script>
+    <script src="/static/script.js?v=11.0"></script>
 </body>
 </html>
